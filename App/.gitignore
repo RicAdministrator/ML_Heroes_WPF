@@ -1,0 +1,42 @@
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio cache and options
+.vs/
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+## NuGet Packages
+*.nupkg
+**/packages/*
+!**/packages/build/
+
+## ASP.NET specific
+*.publishsettings
+_MethodChain.cs
+*.vsp
+*.vspscc
+
+## Web Application specific
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.[Cc]ache
+!*.[Cc]ache/
+
+## Others (WinForms/Console/Library/DB)
+*.pdb
+*.aps
+*.LNK
+*.mdf
+*.ldf
