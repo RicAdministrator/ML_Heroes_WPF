@@ -19,6 +19,11 @@
                 <TextBlock Text="Heroes" FontSize="26" FontWeight="SemiBold" Foreground="#14213D"/>
             </Grid>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:RolesViewModel}">
+            <Grid Margin="28">
+                <TextBlock Text="Roles" FontSize="26" FontWeight="SemiBold" Foreground="#14213D"/>
+            </Grid>
+        </DataTemplate>
     </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
