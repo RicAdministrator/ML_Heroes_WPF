@@ -61,7 +61,40 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:RolesViewModel}">
             <Grid Margin="28">
-                <TextBlock Text="Roles" FontSize="26" FontWeight="SemiBold" Foreground="#14213D"/>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0">
+                    <TextBlock Text="Roles" FontSize="26" FontWeight="SemiBold" Foreground="#14213D"/>
+                </Grid>
+                <ListView Grid.Row="2" ItemsSource="{Binding Roles}" Background="White" BorderBrush="#D7DFEA" BorderThickness="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Logo" Width="90">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Image Source="{Binding LogoUrl}" Width="64" Height="54" Stretch="UniformToFill"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Role" DisplayMemberBinding="{Binding RoleName}" Width="150"/>
+                            <GridViewColumn Header="Primary Function" DisplayMemberBinding="{Binding PrimaryFunction}" Width="260"/>
+                            <GridViewColumn Header="Key Attributes" DisplayMemberBinding="{Binding KeyAttributes}" Width="330"/>
+                            <GridViewColumn Header="Actions" Width="170">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="Update" Style="{StaticResource SmallButtonStyle}"/>
+                                            <Button Content="Delete" Style="{StaticResource SmallButtonStyle}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
             </Grid>
         </DataTemplate>
     </Window.Resources>

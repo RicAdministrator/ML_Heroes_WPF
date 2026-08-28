@@ -18,7 +18,7 @@ namespace WPF_App
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= MainWindow_Loaded;
-            await ((MainViewModel)DataContext).Heroes.LoadAsync();
+            await ((MainViewModel)DataContext).LoadAsync();
         }
     }
 }

@@ -17,10 +17,15 @@ public sealed class MainViewModel : ObservableObject
     public MainViewModel(HeroesApiClient apiClient)
     {
         Heroes = new HeroesViewModel(apiClient);
-        Roles = new RolesViewModel();
+        Roles = new RolesViewModel(apiClient);
         currentPage = Heroes;
         ShowHeroesCommand = new RelayCommand(() => CurrentPage = Heroes);
         ShowRolesCommand = new RelayCommand(() => CurrentPage = Roles);
+    }
+
+    public async Task LoadAsync()
+    {
+        await Task.WhenAll(Heroes.LoadAsync(), Roles.LoadAsync());
     }
 }
 
@@ -29,6 +34,7 @@ public sealed class HeroesViewModel
     private readonly HeroesApiClient apiClient;
 
     public ObservableCollection<Hero> Heroes { get; } = [];
+    public ObservableCollection<Role> Roles { get; } = [];
 
     public HeroesViewModel(HeroesApiClient apiClient)
     {
@@ -37,14 +43,47 @@ public sealed class HeroesViewModel
 
     public async Task LoadAsync()
     {
+        try
+        {
+            var roles = await apiClient.GetRolesAsync();
+            Roles.Clear();
+            foreach (var role in roles) Roles.Add(role);
+            await RefreshHeroesAsync();
+        }
+        catch (Exception exception) { }
+        finally { }
+    }
+
+    private async Task RefreshHeroesAsync()
+    {
         var heroes = await apiClient.GetHeroesAsync();
         Heroes.Clear();
-        foreach (var hero in heroes)
-        {
-            Heroes.Add(hero);
-        }
+        foreach (var hero in heroes) Heroes.Add(hero);
     }
 }
 
-public sealed class RolesViewModel 
-{ }
+public sealed class RolesViewModel
+{
+    private readonly HeroesApiClient apiClient;
+
+    public ObservableCollection<Role> Roles { get; } = [];
+
+    public RolesViewModel(HeroesApiClient apiClient)
+    {
+        this.apiClient = apiClient;
+    }
+
+    public async Task LoadAsync()
+    {
+        try { await RefreshRolesAsync(); }
+        catch (Exception exception) { }
+        finally { }
+    }
+
+    private async Task RefreshRolesAsync()
+    {
+        var roles = await apiClient.GetRolesAsync();
+        Roles.Clear();
+        foreach (var role in roles) Roles.Add(role);
+    }
+}
