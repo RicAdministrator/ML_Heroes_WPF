@@ -8,6 +8,13 @@
         mc:Ignorable="d"
         Title="ML Heroes" Height="720" Width="1180" MinHeight="560" MinWidth="850" Background="#F4F7FB">
     <Window.Resources>
+        <Style x:Key="SmallButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#E5EAF1"/>
+            <Setter Property="Foreground" Value="#14213D"/>
+            <Setter Property="Padding" Value="9,5"/>
+            <Setter Property="Margin" Value="0,0,5,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
         <Style x:Key="NavButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="White"/>
@@ -16,7 +23,40 @@
         </Style>
         <DataTemplate DataType="{x:Type vm:HeroesViewModel}">
             <Grid Margin="28">
-                <TextBlock Text="Heroes" FontSize="26" FontWeight="SemiBold" Foreground="#14213D"/>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0">
+                    <TextBlock Text="Heroes" FontSize="26" FontWeight="SemiBold" Foreground="#14213D"/>
+                </Grid>
+                <ListView Grid.Row="2" ItemsSource="{Binding Heroes}" Background="White" BorderBrush="#D7DFEA" BorderThickness="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Image" Width="100">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Image Source="{Binding ImageUrl}" Width="78" Height="64" Stretch="UniformToFill"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" Width="150"/>
+                            <GridViewColumn Header="Roles" DisplayMemberBinding="{Binding Roles}" Width="170"/>
+                            <GridViewColumn Header="Description" DisplayMemberBinding="{Binding Description}" Width="390"/>
+                            <GridViewColumn Header="Actions" Width="170">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="Update" Style="{StaticResource SmallButtonStyle}"/>
+                                            <Button Content="Delete" Style="{StaticResource SmallButtonStyle}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
             </Grid>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:RolesViewModel}">

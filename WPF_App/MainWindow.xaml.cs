@@ -1,26 +1,24 @@
-﻿using System.Text;
+﻿using System.Net.Http;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using WPF_App.Api;
 using WPF_App.ViewModels;
 
 namespace WPF_App
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainViewModel();
+            var httpClient = new HttpClient { BaseAddress = new Uri("http://localhost:3001/") };
+            DataContext = new MainViewModel(new HeroesApiClient(httpClient));
+            Loaded += MainWindow_Loaded;
+        }
+
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= MainWindow_Loaded;
+            await ((MainViewModel)DataContext).Heroes.LoadAsync();
         }
     }
 }
