@@ -25,6 +25,14 @@ public sealed class Role
     public string KeyAttributes { get; set; } = string.Empty;
 }
 
+public sealed class HeroRole
+{
+    [JsonPropertyName("hero_id")]
+    public int HeroId { get; set; }
+    [JsonPropertyName("role_id")]
+    public int RoleId { get; set; }
+}
+
 public sealed class HeroRequest
 {
     public string Name { get; set; } = string.Empty;

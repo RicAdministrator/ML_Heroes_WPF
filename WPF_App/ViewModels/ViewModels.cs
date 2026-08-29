@@ -242,17 +242,22 @@ public sealed class HeroesViewModel : ListViewModel
 public sealed class RoleItemViewModel
 {
     private readonly Action<RoleItemViewModel> update;
+    private readonly Action<RoleItemViewModel> delete;
     public int Id { get; }
     public string RoleName { get; }
     public string LogoUrl { get; }
     public string PrimaryFunction { get; }
     public string KeyAttributes { get; }
     public RelayCommand UpdateCommand { get; }
+    public RelayCommand DeleteCommand { get; }
 
-    public RoleItemViewModel(Role role, Action<RoleItemViewModel> update)
+    public RoleItemViewModel(Role role, Action<RoleItemViewModel> update, Action<RoleItemViewModel> delete)
     {
         Id = role.Id; RoleName = role.RoleName; LogoUrl = role.LogoUrl; PrimaryFunction = role.PrimaryFunction; KeyAttributes = role.KeyAttributes;
+        this.update = update;
+        this.delete = delete;
         UpdateCommand = new RelayCommand(() => update(this));
+        DeleteCommand = new RelayCommand(() => this.delete(this));
     }
 }
 
@@ -299,7 +304,7 @@ public sealed class RolesViewModel : ListViewModel
     {
         var roles = await apiClient.GetRolesAsync();
         Roles.Clear();
-        foreach (var role in roles) Roles.Add(new RoleItemViewModel(role, BeginUpdate));
+        foreach (var role in roles) Roles.Add(new RoleItemViewModel(role, BeginUpdate, DeleteAsync));
     }
 
     private void BeginAdd()
@@ -337,6 +342,24 @@ public sealed class RolesViewModel : ListViewModel
     {
         if (string.IsNullOrWhiteSpace(RoleName)) return "Role is required.";
         return Roles.Any(role => string.Equals(role.RoleName, RoleName.Trim(), StringComparison.OrdinalIgnoreCase) && role.Id != RoleId) ? "Role already exists." : string.Empty;
+    }
+
+    private async void DeleteAsync(RoleItemViewModel item)
+    {
+        ClearMessages();
+        try
+        {
+            var assignments = await apiClient.GetHeroRolesAsync();
+            if (assignments.Any(assignment => assignment.RoleId == item.Id))
+            {
+                SetError(new InvalidOperationException("This role is assigned to one or more heroes. Please remove the role from the heroes before deleting it."));
+                return;
+            }
+            await apiClient.DeleteRoleAsync(item.Id);
+            SetStatus("Role was deleted successfully.");
+            await RefreshRolesAsync();
+        }
+        catch (Exception exception) { SetError(exception); }
     }
 
     private void Cancel()

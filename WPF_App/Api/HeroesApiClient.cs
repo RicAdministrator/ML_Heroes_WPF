@@ -19,6 +19,9 @@ public sealed class HeroesApiClient
     public async Task<IReadOnlyList<Role>> GetRolesAsync(CancellationToken cancellationToken = default) =>
         await GetAsync<List<Role>>("api/roles", cancellationToken) ?? [];
 
+    public async Task<IReadOnlyList<HeroRole>> GetHeroRolesAsync(CancellationToken cancellationToken = default) =>
+        await GetAsync<List<HeroRole>>("api/hero_roles", cancellationToken) ?? [];
+
     public Task SaveHeroAsync(int? id, HeroRequest request, CancellationToken cancellationToken = default) =>
         SendAsync(id is null ? HttpMethod.Post : HttpMethod.Put, id is null ? "api/heroes" : $"api/heroes/{id}", request, cancellationToken);
 

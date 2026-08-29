@@ -218,7 +218,7 @@
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
                                             <Button Content="Update" Command="{Binding UpdateCommand}" Style="{StaticResource SmallButtonStyle}"/>
-                                            <Button Content="Delete" Style="{StaticResource SmallButtonStyle}"/>
+                                            <Button Content="Delete" Command="{Binding DeleteCommand}" Style="{StaticResource SmallButtonStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
