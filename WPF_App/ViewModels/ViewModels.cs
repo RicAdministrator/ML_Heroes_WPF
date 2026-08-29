@@ -5,6 +5,41 @@ using WPF_App.Models;
 
 namespace WPF_App.ViewModels;
 
+public abstract class ListViewModel : ObservableObject
+{
+    private bool isLoading;
+    private string errorMessage = string.Empty;
+    private string statusMessage = string.Empty;
+
+    public bool IsLoading { get => isLoading; protected set => SetProperty(ref isLoading, value); }
+    public string ErrorMessage { get => errorMessage; protected set => SetProperty(ref errorMessage, value); }
+    public string StatusMessage { get => statusMessage; protected set => SetProperty(ref statusMessage, value); }
+    public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
+    public bool HasStatus => !string.IsNullOrWhiteSpace(StatusMessage);
+
+    protected void SetError(Exception exception)
+    {
+        ErrorMessage = exception.Message;
+        OnPropertyChanged(nameof(HasError));
+    }
+
+    protected void ClearMessages()
+    {
+        ErrorMessage = string.Empty;
+        StatusMessage = string.Empty;
+        OnPropertyChanged(nameof(HasError));
+        OnPropertyChanged(nameof(HasStatus));
+    }
+
+    protected void SetStatus(string message)
+    {
+        ErrorMessage = string.Empty;
+        StatusMessage = message;
+        OnPropertyChanged(nameof(HasError));
+        OnPropertyChanged(nameof(HasStatus));
+    }
+}
+
 public sealed class MainViewModel : ObservableObject
 {
     private object currentPage;
@@ -64,7 +99,7 @@ public sealed class HeroItemViewModel
     }
 }
 
-public sealed class HeroesViewModel : ObservableObject
+public sealed class HeroesViewModel : ListViewModel
 {
     private readonly HeroesApiClient apiClient;
     private int? heroId;
@@ -117,12 +152,14 @@ public sealed class HeroesViewModel : ObservableObject
 
     private void BeginAdd()
     {
+        ClearMessages();
         ResetForm();
         IsEditing = true;
     }
 
     private void BeginUpdate(HeroItemViewModel item)
     {
+        ClearMessages();
         HeroId = item.Id;
         Name = item.Name;
         ImageUrl = item.ImageUrl;
@@ -140,6 +177,23 @@ public sealed class HeroesViewModel : ObservableObject
     {
         ValidationMessage = Validate();
         if (!string.IsNullOrWhiteSpace(ValidationMessage)) return;
+
+        try
+        {
+            await apiClient.SaveHeroAsync(HeroId, new HeroRequest
+            {
+                Name = Name.Trim(),
+                ImageUrl = ImageUrl.Trim(),
+                Description = Description.Trim(),
+                Roles = Roles.Where(role => role.IsSelected).Select(role => role.Id).ToArray()
+            });
+            var wasUpdate = HeroId.HasValue;
+            ResetForm();
+            IsEditing = false;
+            SetStatus(wasUpdate ? "Hero was updated successfully." : "Hero was added successfully.");
+            await RefreshHeroesAsync();
+        }
+        catch (Exception exception) { SetError(exception); }
     }
 
     private string Validate()
