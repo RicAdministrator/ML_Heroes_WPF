@@ -5,9 +5,35 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPF_App"
         xmlns:vm="clr-namespace:WPF_App.ViewModels"
+        xmlns:infra="clr-namespace:WPF_App.Infrastructure"
         mc:Ignorable="d"
         Title="ML Heroes" Height="720" Width="1180" MinHeight="560" MinWidth="850" Background="#F4F7FB">
     <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
+        <infra:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibility" />
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,0,0,5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#344054"/>
+        </Style>
+        <Style x:Key="InputStyle" TargetType="TextBox">
+            <Setter Property="Padding" Value="9,7"/>
+            <Setter Property="Margin" Value="0,0,0,14"/>
+            <Setter Property="BorderBrush" Value="#C7D2E0"/>
+        </Style>
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#176B42"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="16,9"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#E5EAF1"/>
+            <Setter Property="Foreground" Value="#14213D"/>
+            <Setter Property="Padding" Value="16,9"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
         <Style x:Key="SmallButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#E5EAF1"/>
             <Setter Property="Foreground" Value="#14213D"/>
@@ -28,10 +54,67 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <Grid Grid.Row="0">
-                    <TextBlock Text="Heroes" FontSize="26" FontWeight="SemiBold" Foreground="#14213D"/>
+                <Grid Grid.Row="0" Visibility="{Binding IsEditing, Converter={StaticResource BooleanToVisibility}}">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsEditing}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <StackPanel>
+                        <TextBlock Text="{Binding FormTitle}" FontSize="26" FontWeight="SemiBold" Foreground="#14213D" Margin="0,0,0,18"/>
+                        <TextBlock Text="Name" Style="{StaticResource LabelStyle}"/>
+                        <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" MaxLength="50" Style="{StaticResource InputStyle}"/>
+                        <TextBlock Text="Image URL" Style="{StaticResource LabelStyle}"/>
+                        <TextBox Text="{Binding ImageUrl, UpdateSourceTrigger=PropertyChanged}" MaxLength="150" Style="{StaticResource InputStyle}"/>
+                        <TextBlock Text="Roles" Style="{StaticResource LabelStyle}"/>
+                        <ItemsControl ItemsSource="{Binding Roles}" Margin="0,0,0,14">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected}" Margin="0,0,22,8" FontSize="14"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="Description" Style="{StaticResource LabelStyle}"/>
+                        <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" MaxLength="150" Height="72" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Style="{StaticResource InputStyle}"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Save" Style="{StaticResource PrimaryButtonStyle}"/>
+                            <Button Content="Cancel" Command="{Binding CancelCommand}" Style="{StaticResource SecondaryButtonStyle}"/>
+                        </StackPanel>
+                    </StackPanel>
                 </Grid>
-                <ListView Grid.Row="2" ItemsSource="{Binding Heroes}" Background="White" BorderBrush="#D7DFEA" BorderThickness="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <Grid Grid.Row="0">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <DockPanel>
+                        <Button Content="+  Add Hero" Command="{Binding AddCommand}" DockPanel.Dock="Right" Style="{StaticResource PrimaryButtonStyle}"/>
+                        <TextBlock Text="Heroes" FontSize="26" FontWeight="SemiBold" Foreground="#14213D"/>
+                    </DockPanel>
+                </Grid>
+                <Border Grid.Row="1" Background="#E8F5EE" Padding="12" Margin="0,16,0,12">
+                    <TextBlock Foreground="#176B42"/>
+                </Border>
+                <Border Grid.Row="1" Background="#FDECEC" Padding="12" Margin="0,16,0,12">
+                    <TextBlock Foreground="#B42318" TextWrapping="Wrap"/>
+                </Border>
+                <ListView Grid.Row="2" ItemsSource="{Binding Heroes}" Visibility="{Binding IsEditing, Converter={StaticResource InverseBooleanToVisibility}}" Background="White" BorderBrush="#D7DFEA" BorderThickness="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <ListView.View>
                         <GridView>
                             <GridViewColumn Header="Image" Width="100">
@@ -48,7 +131,7 @@
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
-                                            <Button Content="Update" Style="{StaticResource SmallButtonStyle}"/>
+                                            <Button Content="Update" Command="{Binding UpdateCommand}" Style="{StaticResource SmallButtonStyle}"/>
                                             <Button Content="Delete" Style="{StaticResource SmallButtonStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -86,7 +169,7 @@
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
-                                            <Button Content="Update" Style="{StaticResource SmallButtonStyle}"/>
+                                            <Button Content="Update" Command="{Binding UpdateCommand}" Style="{StaticResource SmallButtonStyle}"/>
                                             <Button Content="Delete" Style="{StaticResource SmallButtonStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>

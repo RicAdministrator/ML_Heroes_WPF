@@ -29,16 +29,66 @@ public sealed class MainViewModel : ObservableObject
     }
 }
 
-public sealed class HeroesViewModel
+public sealed class RoleOptionViewModel : ObservableObject
+{
+    private bool isSelected;
+
+    public int Id { get; }
+    public string Name { get; }
+    public bool IsSelected { get => isSelected; set => SetProperty(ref isSelected, value); }
+
+    public RoleOptionViewModel(Role role)
+    {
+        Id = role.Id;
+        Name = role.RoleName;
+    }
+}
+
+public sealed class HeroItemViewModel
+{
+    public int Id { get; }
+    public string Name { get; }
+    public string ImageUrl { get; }
+    public string Roles { get; }
+    public string Description { get; }
+    public RelayCommand UpdateCommand { get; }
+
+    public HeroItemViewModel(Hero hero, Action<HeroItemViewModel> update)
+    {
+        Id = hero.Id;
+        Name = hero.Name;
+        ImageUrl = hero.ImageUrl;
+        Roles = hero.Roles;
+        Description = hero.Description;
+        UpdateCommand = new RelayCommand(() => update(this));
+    }
+}
+
+public sealed class HeroesViewModel : ObservableObject
 {
     private readonly HeroesApiClient apiClient;
+    private int? heroId;
+    private string name = string.Empty;
+    private string imageUrl = string.Empty;
+    private string description = string.Empty;
+    private bool isEditing;
 
-    public ObservableCollection<Hero> Heroes { get; } = [];
-    public ObservableCollection<Role> Roles { get; } = [];
+    public ObservableCollection<HeroItemViewModel> Heroes { get; } = [];
+    public ObservableCollection<RoleOptionViewModel> Roles { get; } = [];
+    public int? HeroId { get => heroId; private set => SetProperty(ref heroId, value); }
+    public string Name { get => name; set => SetProperty(ref name, value); }
+    public string ImageUrl { get => imageUrl; set => SetProperty(ref imageUrl, value); }
+    public string Description { get => description; set => SetProperty(ref description, value); }
+    public bool IsEditing { get => isEditing; private set => SetProperty(ref isEditing, value); }
+    public string FormTitle => HeroId.HasValue ? "Update Hero" : "Add Hero";
+    public RelayCommand AddCommand { get; }
+    public RelayCommand CancelCommand { get; }
 
     public HeroesViewModel(HeroesApiClient apiClient)
     {
         this.apiClient = apiClient;
+        AddCommand = new RelayCommand(BeginAdd);
+        CancelCommand = new RelayCommand(Cancel);
     }
 
     public async Task LoadAsync()
@@ -47,7 +97,7 @@ public sealed class HeroesViewModel
         {
             var roles = await apiClient.GetRolesAsync();
             Roles.Clear();
-            foreach (var role in roles) Roles.Add(role);
+            foreach (var role in roles) Roles.Add(new RoleOptionViewModel(role));
             await RefreshHeroesAsync();
         }
         catch (Exception exception) { }
@@ -58,7 +108,44 @@ public sealed class HeroesViewModel
     {
         var heroes = await apiClient.GetHeroesAsync();
         Heroes.Clear();
-        foreach (var hero in heroes) Heroes.Add(hero);
+        foreach (var hero in heroes) Heroes.Add(new HeroItemViewModel(hero, BeginUpdate));
+    }
+
+    private void BeginAdd()
+    {
+        ResetForm();
+        IsEditing = true;
+    }
+
+    private void BeginUpdate(HeroItemViewModel item)
+    {
+        HeroId = item.Id;
+        Name = item.Name;
+        ImageUrl = item.ImageUrl;
+        Description = item.Description;
+        var selectedNames = item.Roles.Split(" / ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        foreach (var role in Roles)
+        {
+            role.IsSelected = selectedNames.Any(name => string.Equals(name, role.Name, StringComparison.OrdinalIgnoreCase));
+        }
+        OnPropertyChanged(nameof(FormTitle));
+        IsEditing = true;
+    }
+
+    private void Cancel()
+    {
+        ResetForm();
+        IsEditing = false;
+    }
+
+    private void ResetForm()
+    {
+        HeroId = null;
+        Name = string.Empty;
+        ImageUrl = string.Empty;
+        Description = string.Empty;
+        foreach (var role in Roles) role.IsSelected = false;
+        OnPropertyChanged(nameof(FormTitle));
     }
 }
 
