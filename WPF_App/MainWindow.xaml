@@ -194,11 +194,11 @@
                         <TextBlock Text="Roles" FontSize="26" FontWeight="SemiBold" Foreground="#14213D"/>
                     </DockPanel>
                 </Grid>
-                <Border Grid.Row="1" Background="#E8F5EE" Padding="12" Margin="0,16,0,12">
-                    <TextBlock Foreground="#176B42"/>
+                <Border Grid.Row="1" Background="#E8F5EE" Padding="12" Margin="0,16,0,12" Visibility="{Binding HasStatus, Converter={StaticResource BooleanToVisibility}}">
+                    <TextBlock Text="{Binding StatusMessage}" Foreground="#176B42"/>
                 </Border>
-                <Border Grid.Row="1" Background="#FDECEC" Padding="12" Margin="0,16,0,12">
-                    <TextBlock Foreground="#B42318" TextWrapping="Wrap"/>
+                <Border Grid.Row="1" Background="#FDECEC" Padding="12" Margin="0,16,0,12" Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibility}}">
+                    <TextBlock Text="{Binding ErrorMessage}" Foreground="#B42318" TextWrapping="Wrap"/>
                 </Border>
                 <ListView Grid.Row="2" ItemsSource="{Binding Roles}" Visibility="{Binding IsEditing, Converter={StaticResource InverseBooleanToVisibility}}" Background="White" BorderBrush="#D7DFEA" BorderThickness="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <ListView.View>

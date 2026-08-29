@@ -238,7 +238,7 @@ public sealed class RoleItemViewModel
     }
 }
 
-public sealed class RolesViewModel : ObservableObject
+public sealed class RolesViewModel : ListViewModel
 {
     private readonly HeroesApiClient apiClient;
     private int? roleId;
@@ -286,11 +286,14 @@ public sealed class RolesViewModel : ObservableObject
 
     private void BeginAdd()
     {
-        ResetForm(); IsEditing = true;
+        ClearMessages();
+        ResetForm();
+        IsEditing = true;
     }
 
     private void BeginUpdate(RoleItemViewModel item)
     {
+        ClearMessages();
         RoleId = item.Id; RoleName = item.RoleName; LogoUrl = item.LogoUrl; PrimaryFunction = item.PrimaryFunction; KeyAttributes = item.KeyAttributes;
         OnPropertyChanged(nameof(FormTitle)); IsEditing = true;
     }
@@ -299,6 +302,17 @@ public sealed class RolesViewModel : ObservableObject
     {
         ValidationMessage = Validate();
         if (!string.IsNullOrWhiteSpace(ValidationMessage)) return;
+
+        try
+        {
+            await apiClient.SaveRoleAsync(RoleId, new RoleRequest { Role = RoleName.Trim(), LogoUrl = LogoUrl.Trim(), PrimaryFunction = PrimaryFunction.Trim(), KeyAttributes = KeyAttributes.Trim() });
+            var wasUpdate = RoleId.HasValue;
+            var savedRoleName = RoleName.Trim();
+            ResetForm(); IsEditing = false;
+            SetStatus(wasUpdate ? $"\"{savedRoleName}\" was updated successfully." : $"\"{savedRoleName}\" was added successfully.");
+            await RefreshRolesAsync();
+        }
+        catch (Exception exception) { SetError(exception); }
     }
 
     private string Validate()
