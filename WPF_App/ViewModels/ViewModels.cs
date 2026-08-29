@@ -71,6 +71,7 @@ public sealed class HeroesViewModel : ObservableObject
     private string name = string.Empty;
     private string imageUrl = string.Empty;
     private string description = string.Empty;
+    private string validationMessage = string.Empty;
     private bool isEditing;
 
     public ObservableCollection<HeroItemViewModel> Heroes { get; } = [];
@@ -79,16 +80,19 @@ public sealed class HeroesViewModel : ObservableObject
     public string Name { get => name; set => SetProperty(ref name, value); }
     public string ImageUrl { get => imageUrl; set => SetProperty(ref imageUrl, value); }
     public string Description { get => description; set => SetProperty(ref description, value); }
+    public string ValidationMessage { get => validationMessage; private set => SetProperty(ref validationMessage, value); }
     public bool IsEditing { get => isEditing; private set => SetProperty(ref isEditing, value); }
     public string FormTitle => HeroId.HasValue ? "Update Hero" : "Add Hero";
     public RelayCommand AddCommand { get; }
     public RelayCommand CancelCommand { get; }
+    public AsyncRelayCommand SaveCommand { get; }
 
     public HeroesViewModel(HeroesApiClient apiClient)
     {
         this.apiClient = apiClient;
         AddCommand = new RelayCommand(BeginAdd);
         CancelCommand = new RelayCommand(Cancel);
+        SaveCommand = new AsyncRelayCommand(SaveAsync);
     }
 
     public async Task LoadAsync()
@@ -132,6 +136,19 @@ public sealed class HeroesViewModel : ObservableObject
         IsEditing = true;
     }
 
+    private async Task SaveAsync()
+    {
+        ValidationMessage = Validate();
+        if (!string.IsNullOrWhiteSpace(ValidationMessage)) return;
+    }
+
+    private string Validate()
+    {
+        if (string.IsNullOrWhiteSpace(Name)) return "Name is required.";
+        if (Heroes.Any(hero => string.Equals(hero.Name, Name.Trim(), StringComparison.OrdinalIgnoreCase) && hero.Id != HeroId)) return "Hero with this name already exists.";
+        return Roles.Any(role => role.IsSelected) ? string.Empty : "At least one role must be selected.";
+    }
+
     private void Cancel()
     {
         ResetForm();
@@ -144,6 +161,7 @@ public sealed class HeroesViewModel : ObservableObject
         Name = string.Empty;
         ImageUrl = string.Empty;
         Description = string.Empty;
+        ValidationMessage = string.Empty;
         foreach (var role in Roles) role.IsSelected = false;
         OnPropertyChanged(nameof(FormTitle));
     }

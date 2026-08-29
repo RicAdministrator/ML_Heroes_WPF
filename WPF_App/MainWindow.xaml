@@ -86,8 +86,9 @@
                         </ItemsControl>
                         <TextBlock Text="Description" Style="{StaticResource LabelStyle}"/>
                         <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" MaxLength="150" Height="72" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Style="{StaticResource InputStyle}"/>
+                        <TextBlock Text="{Binding ValidationMessage}" Foreground="#B42318" TextWrapping="Wrap" Margin="0,0,0,10"/>
                         <StackPanel Orientation="Horizontal">
-                            <Button Content="Save" Style="{StaticResource PrimaryButtonStyle}"/>
+                            <Button Content="Save" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButtonStyle}"/>
                             <Button Content="Cancel" Command="{Binding CancelCommand}" Style="{StaticResource SecondaryButtonStyle}"/>
                         </StackPanel>
                     </StackPanel>
