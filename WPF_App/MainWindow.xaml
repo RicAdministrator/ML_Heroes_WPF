@@ -171,9 +171,9 @@
                         <TextBox Text="{Binding PrimaryFunction, UpdateSourceTrigger=PropertyChanged}" MaxLength="150" Style="{StaticResource InputStyle}"/>
                         <TextBlock Text="Key Attributes" Style="{StaticResource LabelStyle}"/>
                         <TextBox Text="{Binding KeyAttributes, UpdateSourceTrigger=PropertyChanged}" MaxLength="150" Style="{StaticResource InputStyle}"/>
-                        <TextBlock Foreground="#B42318" Margin="0,0,0,10"/>
+                        <TextBlock Text="{Binding ValidationMessage}" Foreground="#B42318" Margin="0,0,0,10"/>
                         <StackPanel Orientation="Horizontal">
-                            <Button Content="Save" Style="{StaticResource PrimaryButtonStyle}"/>
+                            <Button Content="Save" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButtonStyle}"/>
                             <Button Content="Cancel" Command="{Binding CancelCommand}" Style="{StaticResource SecondaryButtonStyle}"/>
                         </StackPanel>
                     </StackPanel>

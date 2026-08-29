@@ -206,12 +206,14 @@ public sealed class RolesViewModel : ObservableObject
     public string FormTitle => RoleId.HasValue ? "Update Role" : "Add Role";
     public RelayCommand AddCommand { get; }
     public RelayCommand CancelCommand { get; }
+    public AsyncRelayCommand SaveCommand { get; }
 
     public RolesViewModel(HeroesApiClient apiClient)
     {
         this.apiClient = apiClient;
         AddCommand = new RelayCommand(BeginAdd);
         CancelCommand = new RelayCommand(Cancel);
+        SaveCommand = new AsyncRelayCommand(SaveAsync);
     }
 
     public async Task LoadAsync()
@@ -239,6 +241,18 @@ public sealed class RolesViewModel : ObservableObject
         OnPropertyChanged(nameof(FormTitle)); IsEditing = true;
     }
 
+    private async Task SaveAsync()
+    {
+        ValidationMessage = Validate();
+        if (!string.IsNullOrWhiteSpace(ValidationMessage)) return;
+    }
+
+    private string Validate()
+    {
+        if (string.IsNullOrWhiteSpace(RoleName)) return "Role is required.";
+        return Roles.Any(role => string.Equals(role.RoleName, RoleName.Trim(), StringComparison.OrdinalIgnoreCase) && role.Id != RoleId) ? "Role already exists." : string.Empty;
+    }
+
     private void Cancel()
     {
         ResetForm(); IsEditing = false;
@@ -246,7 +260,7 @@ public sealed class RolesViewModel : ObservableObject
 
     private void ResetForm()
     {
-        RoleId = null; RoleName = string.Empty; LogoUrl = string.Empty; PrimaryFunction = string.Empty; KeyAttributes = string.Empty;
+        RoleId = null; RoleName = string.Empty; LogoUrl = string.Empty; PrimaryFunction = string.Empty; KeyAttributes = string.Empty; ValidationMessage = string.Empty;
         OnPropertyChanged(nameof(FormTitle));
     }
 }
