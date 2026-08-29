@@ -149,15 +149,51 @@ public sealed class HeroesViewModel : ObservableObject
     }
 }
 
-public sealed class RolesViewModel
+public sealed class RoleItemViewModel
+{
+    private readonly Action<RoleItemViewModel> update;
+    public int Id { get; }
+    public string RoleName { get; }
+    public string LogoUrl { get; }
+    public string PrimaryFunction { get; }
+    public string KeyAttributes { get; }
+    public RelayCommand UpdateCommand { get; }
+
+    public RoleItemViewModel(Role role, Action<RoleItemViewModel> update)
+    {
+        Id = role.Id; RoleName = role.RoleName; LogoUrl = role.LogoUrl; PrimaryFunction = role.PrimaryFunction; KeyAttributes = role.KeyAttributes;
+        UpdateCommand = new RelayCommand(() => update(this));
+    }
+}
+
+public sealed class RolesViewModel : ObservableObject
 {
     private readonly HeroesApiClient apiClient;
+    private int? roleId;
+    private string roleName = string.Empty;
+    private string logoUrl = string.Empty;
+    private string primaryFunction = string.Empty;
+    private string keyAttributes = string.Empty;
+    private string validationMessage = string.Empty;
+    private bool isEditing;
 
-    public ObservableCollection<Role> Roles { get; } = [];
+    public ObservableCollection<RoleItemViewModel> Roles { get; } = [];
+    public int? RoleId { get => roleId; private set => SetProperty(ref roleId, value); }
+    public string RoleName { get => roleName; set => SetProperty(ref roleName, value); }
+    public string LogoUrl { get => logoUrl; set => SetProperty(ref logoUrl, value); }
+    public string PrimaryFunction { get => primaryFunction; set => SetProperty(ref primaryFunction, value); }
+    public string KeyAttributes { get => keyAttributes; set => SetProperty(ref keyAttributes, value); }
+    public string ValidationMessage { get => validationMessage; private set => SetProperty(ref validationMessage, value); }
+    public bool IsEditing { get => isEditing; private set => SetProperty(ref isEditing, value); }
+    public string FormTitle => RoleId.HasValue ? "Update Role" : "Add Role";
+    public RelayCommand AddCommand { get; }
+    public RelayCommand CancelCommand { get; }
 
     public RolesViewModel(HeroesApiClient apiClient)
     {
         this.apiClient = apiClient;
+        AddCommand = new RelayCommand(BeginAdd);
+        CancelCommand = new RelayCommand(Cancel);
     }
 
     public async Task LoadAsync()
@@ -171,6 +207,28 @@ public sealed class RolesViewModel
     {
         var roles = await apiClient.GetRolesAsync();
         Roles.Clear();
-        foreach (var role in roles) Roles.Add(role);
+        foreach (var role in roles) Roles.Add(new RoleItemViewModel(role, BeginUpdate));
+    }
+
+    private void BeginAdd()
+    {
+        ResetForm(); IsEditing = true;
+    }
+
+    private void BeginUpdate(RoleItemViewModel item)
+    {
+        RoleId = item.Id; RoleName = item.RoleName; LogoUrl = item.LogoUrl; PrimaryFunction = item.PrimaryFunction; KeyAttributes = item.KeyAttributes;
+        OnPropertyChanged(nameof(FormTitle)); IsEditing = true;
+    }
+
+    private void Cancel()
+    {
+        ResetForm(); IsEditing = false;
+    }
+
+    private void ResetForm()
+    {
+        RoleId = null; RoleName = string.Empty; LogoUrl = string.Empty; PrimaryFunction = string.Empty; KeyAttributes = string.Empty;
+        OnPropertyChanged(nameof(FormTitle));
     }
 }

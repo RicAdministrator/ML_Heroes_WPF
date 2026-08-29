@@ -150,9 +150,56 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <Grid Grid.Row="0">
-                    <TextBlock Text="Roles" FontSize="26" FontWeight="SemiBold" Foreground="#14213D"/>
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <StackPanel>
+                        <TextBlock Text="{Binding FormTitle}" FontSize="26" FontWeight="SemiBold" Foreground="#14213D" Margin="0,0,0,18"/>
+                        <TextBlock Text="Role" Style="{StaticResource LabelStyle}"/>
+                        <TextBox Text="{Binding RoleName, UpdateSourceTrigger=PropertyChanged}" MaxLength="50" Style="{StaticResource InputStyle}"/>
+                        <TextBlock Text="Logo URL" Style="{StaticResource LabelStyle}"/>
+                        <TextBox Text="{Binding LogoUrl, UpdateSourceTrigger=PropertyChanged}" MaxLength="150" Style="{StaticResource InputStyle}"/>
+                        <TextBlock Text="Primary Function" Style="{StaticResource LabelStyle}"/>
+                        <TextBox Text="{Binding PrimaryFunction, UpdateSourceTrigger=PropertyChanged}" MaxLength="150" Style="{StaticResource InputStyle}"/>
+                        <TextBlock Text="Key Attributes" Style="{StaticResource LabelStyle}"/>
+                        <TextBox Text="{Binding KeyAttributes, UpdateSourceTrigger=PropertyChanged}" MaxLength="150" Style="{StaticResource InputStyle}"/>
+                        <TextBlock Foreground="#B42318" Margin="0,0,0,10"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Save" Style="{StaticResource PrimaryButtonStyle}"/>
+                            <Button Content="Cancel" Command="{Binding CancelCommand}" Style="{StaticResource SecondaryButtonStyle}"/>
+                        </StackPanel>
+                    </StackPanel>
                 </Grid>
-                <ListView Grid.Row="2" ItemsSource="{Binding Roles}" Background="White" BorderBrush="#D7DFEA" BorderThickness="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <Grid Grid.Row="0">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <DockPanel>
+                        <Button Content="+  Add Role" Command="{Binding AddCommand}" DockPanel.Dock="Right" Style="{StaticResource PrimaryButtonStyle}"/>
+                        <TextBlock Text="Roles" FontSize="26" FontWeight="SemiBold" Foreground="#14213D"/>
+                    </DockPanel>
+                </Grid>
+                <Border Grid.Row="1" Background="#E8F5EE" Padding="12" Margin="0,16,0,12">
+                    <TextBlock Foreground="#176B42"/>
+                </Border>
+                <Border Grid.Row="1" Background="#FDECEC" Padding="12" Margin="0,16,0,12">
+                    <TextBlock Foreground="#B42318" TextWrapping="Wrap"/>
+                </Border>
+                <ListView Grid.Row="2" ItemsSource="{Binding Roles}" Visibility="{Binding IsEditing, Converter={StaticResource InverseBooleanToVisibility}}" Background="White" BorderBrush="#D7DFEA" BorderThickness="1" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <ListView.View>
                         <GridView>
                             <GridViewColumn Header="Logo" Width="90">
