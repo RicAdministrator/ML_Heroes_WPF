@@ -81,21 +81,27 @@ public sealed class RoleOptionViewModel : ObservableObject
 
 public sealed class HeroItemViewModel
 {
+    private readonly Action<HeroItemViewModel> update;
+    private readonly Action<HeroItemViewModel> delete;
     public int Id { get; }
     public string Name { get; }
     public string ImageUrl { get; }
     public string Roles { get; }
     public string Description { get; }
     public RelayCommand UpdateCommand { get; }
+    public RelayCommand DeleteCommand { get; }
 
-    public HeroItemViewModel(Hero hero, Action<HeroItemViewModel> update)
+    public HeroItemViewModel(Hero hero, Action<HeroItemViewModel> update, Action<HeroItemViewModel> delete)
     {
         Id = hero.Id;
         Name = hero.Name;
         ImageUrl = hero.ImageUrl;
         Roles = hero.Roles;
         Description = hero.Description;
+        this.update = update;
+        this.delete = delete;
         UpdateCommand = new RelayCommand(() => update(this));
+        DeleteCommand = new RelayCommand(() => this.delete(this));
     }
 }
 
@@ -147,7 +153,7 @@ public sealed class HeroesViewModel : ListViewModel
     {
         var heroes = await apiClient.GetHeroesAsync();
         Heroes.Clear();
-        foreach (var hero in heroes) Heroes.Add(new HeroItemViewModel(hero, BeginUpdate));
+        foreach (var hero in heroes) Heroes.Add(new HeroItemViewModel(hero, BeginUpdate, DeleteAsync));
     }
 
     private void BeginAdd()
@@ -201,6 +207,18 @@ public sealed class HeroesViewModel : ListViewModel
         if (string.IsNullOrWhiteSpace(Name)) return "Name is required.";
         if (Heroes.Any(hero => string.Equals(hero.Name, Name.Trim(), StringComparison.OrdinalIgnoreCase) && hero.Id != HeroId)) return "Hero with this name already exists.";
         return Roles.Any(role => role.IsSelected) ? string.Empty : "At least one role must be selected.";
+    }
+
+    private async void DeleteAsync(HeroItemViewModel item)
+    {
+        ClearMessages();
+        try
+        {
+            await apiClient.DeleteHeroAsync(item.Id);
+            SetStatus("Hero was deleted successfully.");
+            await RefreshHeroesAsync();
+        }
+        catch (Exception exception) { SetError(exception); }
     }
 
     private void Cancel()
